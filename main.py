@@ -141,9 +141,17 @@
 #     print(text)
 import pdfquery
 import openpyxl
+from tkinter import Tk, filedialog
+
+# Create a Tkinter root window
+root = Tk()
+root.withdraw()
+
+# Prompt the user to select a PDF file
+pdf_file_path = filedialog.askopenfilename(filetypes=[("PDF Files", "*.pdf")])
 
 # Load the PDF file
-pdf = pdfquery.PDFQuery("2022_T4_Original.pdf")
+pdf = pdfquery.PDFQuery(pdf_file_path)
 pdf.load()
 
 # Extract data and store in the ans_array list
@@ -161,6 +169,13 @@ sheet = workbook.active
 
 # Write data to the Excel sheet
 sheet.append(ans_array)
+
+# Save the Excel file
+output_file_path = "output.xlsx"
+workbook.save(output_file_path)
+
+print(f"Data extracted from {pdf_file_path} and saved to {output_file_path}.")
+
 
 # Save the Excel file
 workbook.save("output.xlsx")
