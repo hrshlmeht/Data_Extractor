@@ -139,43 +139,102 @@
 # # Print the selected text
 # for text in selected_text:
 #     print(text)
+# import pdfquery
+# import openpyxl
+# from tkinter import Tk, filedialog
+#
+# # Create a Tkinter root window
+# root = Tk()
+# root.withdraw()
+#
+# # Prompt the user to select a PDF file
+# pdf_file_path = filedialog.askopenfilename(filetypes=[("PDF Files", "*.pdf")])
+#
+# # Load the PDF file
+# pdf = pdfquery.PDFQuery(pdf_file_path)
+# pdf.load()
+#
+# # Extract data and store in the ans_array list
+# ans_array = []
+# employer_name = pdf.pq('LTTextLineHorizontal:in_bbox("56.3, 755.74, 179.955, 772.195")').text()
+# ans_array.append(employer_name)
+# year = pdf.pq('LTTextLineHorizontal:in_bbox("307.991, 746.541, 323.559, 753.541")').text()
+# ans_array.append(year)
+# name = pdf.pq('LTTextLineHorizontal:in_bbox("217.246, 584.136, 259.753, 593.136")').text()
+# ans_array.append(name)
+#
+# # Create an Excel workbook and sheet
+# workbook = openpyxl.Workbook()
+# sheet = workbook.active
+#
+# # Write data to the Excel sheet
+# sheet.append(ans_array)
+#
+# # Save the Excel file
+# output_file_path = "output.xlsx"
+# workbook.save(output_file_path)
+#
+# print(f"Data extracted from {pdf_file_path} and saved to {output_file_path}.")
+#
+#
+# # Save the Excel file
+# workbook.save("output.xlsx")
 import pdfquery
 import openpyxl
 from tkinter import Tk, filedialog
 
-# Create a Tkinter root window
+# Create a Tkinter window
 root = Tk()
 root.withdraw()
 
-# Prompt the user to select a PDF file
+# Prompt the user to select the PDF file
+pdf_file_path = filedialog.askopenfilename(filetypes=[("PDF Files", "*.pdf")])
+
+# Load the PDF file
+import pdfquery
+import openpyxl
+from tkinter import Tk, filedialog
+
+# Create a Tkinter window
+root = Tk()
+root.withdraw()
+
+# Prompt the user to select the PDF file
 pdf_file_path = filedialog.askopenfilename(filetypes=[("PDF Files", "*.pdf")])
 
 # Load the PDF file
 pdf = pdfquery.PDFQuery(pdf_file_path)
 pdf.load()
 
-# Extract data and store in the ans_array list
+# Extract data from odd pages and store in the ans_array list
 ans_array = []
-employer_name = pdf.pq('LTTextLineHorizontal:in_bbox("56.3, 755.74, 179.955, 772.195")').text()
-ans_array.append(employer_name)
-year = pdf.pq('LTTextLineHorizontal:in_bbox("307.991, 746.541, 323.559, 753.541")').text()
-ans_array.append(year)
-name = pdf.pq('LTTextLineHorizontal:in_bbox("217.246, 584.136, 259.753, 593.136")').text()
-ans_array.append(name)
+for page_number in range(1, len(pdf._pages) + 1, 2):
+    pdf.get_page(page_number)
+    pdf.get_layout(page=page_number)
 
-# Create an Excel workbook and sheet
-workbook = openpyxl.Workbook()
+    employer_name = pdf.pq('LTTextLineHorizontal:in_bbox("56.3, 755.74, 179.955, 772.195")').text()
+    year = pdf.pq('LTTextLineHorizontal:in_bbox("307.991, 746.541, 323.559, 753.541")').text()
+    name = pdf.pq('LTTextLineHorizontal:in_bbox("217.246, 584.136, 259.753, 593.136")').text()
+
+    ans_array.append([employer_name, year, name])
+
+# Load the existing Excel file or create a new one if it doesn't exist
+try:
+    workbook = openpyxl.load_workbook("output.xlsx")
+except FileNotFoundError:
+    workbook = openpyxl.Workbook()
+
+# Select the active sheet
 sheet = workbook.active
 
+# Determine the next available row in the Excel sheet
+next_row = sheet.max_row + 1
+
 # Write data to the Excel sheet
-sheet.append(ans_array)
+for row_data in ans_array:
+    sheet.append(row_data)
 
-# Save the Excel file
-output_file_path = "output.xlsx"
-workbook.save(output_file_path)
-
-print(f"Data extracted from {pdf_file_path} and saved to {output_file_path}.")
-
-
-# Save the Excel file
+# Save the updated Excel file
 workbook.save("output.xlsx")
+
+print("Data saved successfully.")
